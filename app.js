@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const saveValidatorsFromAPI = require("./scripts/saveValidators");
+const validatorRoutes = require("./routes/validator");
 const processLatestBlockFromAPI = require("./scripts/processBlock");
 const processDelegations = require("./scripts/processDelegations");
 const { processValidatorRewards } = require("./scripts/processRewards");
@@ -97,7 +98,9 @@ mongoose
     logger.error(err);
   });
 
-app.use("/main", mainRoutes);
+  app.use("/main", mainRoutes);
+  app.use("/validators", validatorRoutes);
+
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");

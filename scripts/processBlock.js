@@ -4,7 +4,7 @@ const Block = require('../models/Block');
 const Validator = require('../models/ValidatorReward.js');
 
 // API URLs
-const blockInfoUrl = 'https://cosmos-lcd.easy2stake.com/cosmos/base/tendermint/v1beta1/blocks/23655882';
+const blockInfoUrl = 'https://cosmos-lcd.easy2stake.com/cosmos/base/tendermint/v1beta1/blocks/latest';
 const validatorSetUrl = 'https://cosmos-lcd.easy2stake.com/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=200';
 
 const processLatestBlockFromAPI = async () => {
