@@ -1,18 +1,13 @@
 const mongoose = require('mongoose');
 const axios = require('axios');
 const Block = require('../models/Block');
-const Validator = require('../models/ValidatorReward.js');
+const Validator = require('../models/Validator');
 
-// API URLs
-const blockInfoUrl = 'https://cosmos-lcd.easy2stake.com/cosmos/base/tendermint/v1beta1/blocks/latest';
-const validatorSetUrl = 'https://cosmos-lcd.easy2stake.com/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=200';
+// API URL
+const blockInfoUrl = 'https://cosmos-api.stakeandrelax.net/cosmos/base/tendermint/v1beta1/blocks/latest';
 
 const processLatestBlockFromAPI = async () => {
     try {
-        // Önce aktif validator listesini çek
-        const validatorSetResponse = await axios.get(validatorSetUrl);
-        const activeValidators = validatorSetResponse.data.validators;
-        
         // Blok bilgilerini çek
         const response = await axios.get(blockInfoUrl);
         const blockData = response.data;
@@ -36,34 +31,31 @@ const processLatestBlockFromAPI = async () => {
         await newBlock.save();
         console.log(`Blok ${blockHeight} başarıyla kaydedildi.`);
 
-        // İmzası olmayan validatorleri tespit et ve güncelle
-        const updatePromises = signatures.map(async (signature, index) => {
-            if (signature.signature === null) {
-                console.log(`Imzası Null olan Validator ${index + 1}: ${signature.signature}`);
-                
-                // API'den alınan sıralamaya göre validator'ı bul
-                const sortedValidators = activeValidators.sort((a, b) => parseFloat(b.tokens) - parseFloat(a.tokens));
-                const validator = sortedValidators[index];
-                if (validator) {
-                    // Veritabanındaki validator'ı güncelle
-                    const result = await Validator.findOneAndUpdate(
-                        { valoper_address: validator.operator_address },
-                        { 
-                            $addToSet: { missed_block_heights: blockHeight }
-                        },
-                        { new: true }
-                    );
+        // Veritabanından validatorleri rank'e göre sıralı şekilde getir
+        const validators = await Validator.find().sort({ rank: 1 });
 
-                    if (result) {
-                        console.log(`Validator ${validator.description.moniker} (${validator.operator_address}) missed_block_heights güncellendi.`);
-                    } else {
-                        console.log(`Validator ${validator.description.moniker} veritabanında bulunamadı.`);
-                    }
+        // İmzası olmayan validatorleri tespit et ve güncelle
+        for (let i = 0; i < signatures.length; i++) {
+            const signature = signatures[i];
+            if (signature.signature === null) {
+                console.log(`Imzası Null olan Validator ${i + 1}`);
+                
+                // Sıra numarasına göre validator'ı bul
+                if (i < validators.length) {
+                    const validator = validators[i];
+                    // Missed block'u ekle
+                    await Validator.updateOne(
+                        { _id: validator._id },
+                        { $addToSet: { missed_block_heights: blockHeight } }
+                    );
+                    console.log(`${validator.moniker} (rank: ${validator.rank}) için missed block eklendi: ${blockHeight}`);
+                } else {
+                    console.log(`${i + 1}. sırada validator bulunamadı`);
                 }
             }
-        });
+        }
 
-        await Promise.all(updatePromises);
+        console.log('Blok işleme tamamlandı');
 
     } catch (err) {
         console.error('Blok verileri işlenirken bir hata oluştu:', err);
@@ -71,8 +63,6 @@ const processLatestBlockFromAPI = async () => {
 };
 
 module.exports = processLatestBlockFromAPI;
-
-
 /*
 const mongoose = require('mongoose');
 const axios = require('axios');

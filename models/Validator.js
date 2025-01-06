@@ -7,6 +7,7 @@ const delegationSchema = new mongoose.Schema({
 });
 
 const ValidatorSchema = new mongoose.Schema({
+  rank: { type: Number, index: true }, // Sıralama için yeni alan
   valoper_address: { type: String, unique: true },
   moniker: String,
   website: String,
