@@ -13,7 +13,7 @@ RUN npm install
 # Uygulama kodlarını kopyala
 COPY . .
 
-EXPOSE 3000 
+EXPOSE 8080 
 
 # Uygulamayı başlat
 CMD ["node", "app.js"]
