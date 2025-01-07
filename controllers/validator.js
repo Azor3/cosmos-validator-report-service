@@ -105,8 +105,23 @@ const rewardHistory = await ValidatorReward.find({
 // Ödül geçmişini düzenle
 const rewardTimeline = rewardHistory.map(reward => ({
   timestamp: reward.timestamp,
-  amount: reward.rewards.reduce((sum, r) => sum + parseFloat(r.amount), 0)
+  amount: parseFloat(reward.rewards.find(r => r.denom === 'uatom').amount),
+  denom: "uatom"
 }));
+async function getLatestReward(valoper_address) {
+  const latestReward = await ValidatorReward.findOne(
+    { validator_address: valoper_address },
+    { rewards: 1 }
+  ).sort({ timestamp: -1 });
+
+  if (!latestReward || !latestReward.rewards.length) {
+    return 0;
+  }
+
+  // uatom olan son ödülü bul
+  const uatomReward = latestReward.rewards.find(r => r.denom === 'uatom');
+  return uatomReward ? parseFloat(uatomReward.amount) : 0;
+}
   
       const response = {
         valoper_address: validator.valoper_address,
@@ -120,7 +135,7 @@ const rewardTimeline = rewardHistory.map(reward => ({
           total: validator.missed_block_heights ? validator.missed_block_heights.length : 0,
           last_1000_blocks: recentMissedBlocks
         },
-        outstanding_rewards: validator.outstanding_rewards || 0,
+        outstanding_rewards: await getLatestReward(valoper_address),
         commission_rewards: validator.commission_rewards || 0,
         delegations: validator.delegations || [],
         missed_blocks_timeline: missedBlocksTimeline,
