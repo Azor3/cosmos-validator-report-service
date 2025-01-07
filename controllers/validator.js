@@ -34,6 +34,7 @@ exports.getValidators = async (req, res, next) => {
         return {
           moniker: validator.moniker,
           valoper_address: validator.valoper_address,
+          jailed: validator.jailed,
           bonded_tokens: validator.bonded_tokens || 0,
           commission_rate: validator.commission_rate || 0,
           missed_blocks_count: recentMissedBlocks,
@@ -109,9 +110,11 @@ const rewardTimeline = rewardHistory.map(reward => ({
   
       const response = {
         valoper_address: validator.valoper_address,
+        moniker: validator.moniker,
         website: validator.website,
         detail: validator.detail,
         bonded_tokens: validator.bonded_tokens || 0,
+        jailed: validator.jailed,
         commission_rate: validator.commission_rate || 0,
         missed_blocks: {
           total: validator.missed_block_heights ? validator.missed_block_heights.length : 0,
