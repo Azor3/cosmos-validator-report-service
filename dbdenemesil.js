@@ -4,7 +4,7 @@ const Validator = require('./models/Validator'); // Daha önce oluşturduğumuz 
 const Block = require('./models/Block'); // Daha önce oluşturduğumuz Block modeli
 
 // MongoDB bağlantı URL'si (kendi bağlantınızı girin)
-const mongoURI = 'mongodb+srv://<username>:<password>@cluster0.mongodb.net/cosmosdb?retryWrites=true&w=majority';
+const mongoURI = '';
 
 // MongoDB'ye bağlanma
 async function connectToDB() {

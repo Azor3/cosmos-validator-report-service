@@ -15,13 +15,9 @@ const mainRoutes = require("./routes/main");
 const MONGODB_URI = config.get("database.uri");
 const schedule = require("./schedule");
 
-// MongoDB bağlantı URL'si
-const mongoURI =
-  "mongodb+srv://azora:azoradb@araproje.nmbl5.mongodb.net/?retryWrites=true&w=majority&appName=araproje";
-
 async function connectToDB() {
   try {
-    await mongoose.connect(mongoURI, {
+    await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
